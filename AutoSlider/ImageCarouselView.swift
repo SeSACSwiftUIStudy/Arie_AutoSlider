@@ -21,23 +21,23 @@ struct ImageCarouselView<Content: View>: View {
     init(numberOfImages: Int, @ViewBuilder content: () -> Content) {
         self.numberOfImages = numberOfImages
         self.content = content()
+        self.instantiateTimer()
     }
     
     func instantiateTimer() {
-        print("instantiate timer")
-        self.timer = Timer.publish(every: 1, on: .main, in: .common)
+        self.timer = Timer.publish(every: 5, on: .main, in: .common)
         self.connectedTimer = self.timer.connect()
         return
     }
-        
+
     func cancelTimer() {
-        print("cancel timer")
+//        print("cancel timer")
         self.connectedTimer?.cancel()
         return
     }
-    
+
     func restartTimer() {
-        print("restart timer")
+//        print("restart timer")
         self.cancelTimer()
         self.instantiateTimer()
         return
@@ -70,34 +70,33 @@ struct ImageCarouselView<Content: View>: View {
                 .onEnded{ value in
                     self.restartTimer()
                     // 어느 방향으로든 반 이상 이동했는지 확인, 그렇지 않은 경우 오프셋을 다시 0으로 설정
-                    print("gesture ended", slideGesture.width, geometry.size.width / 2)
                     let halfWidth = geometry.size.width / 2
                     if self.slideGesture.width < -halfWidth {
-                        print(1)
+                        print("왼쪽으로 슬라이드")
                         if self.currentIndex < self.numberOfImages - 1 {
                             withAnimation {
                                 self.currentIndex += 1
                             }
+                        } else if self.currentIndex == self.numberOfImages - 1 {
+                            withAnimation {
+                                self.currentIndex = 0
+                            }
                         }
                     }
                     else if self.slideGesture.width > halfWidth {
-                        print(2)
+                        print("오른쪽으로 슬라이드")
                         if self.currentIndex > 0 {
                             withAnimation {
                                 self.currentIndex -= 1
-//                                offset.width = CGFloat(self.currentIndex) * -geometry.size.width
                             }
                         } else if self.currentIndex == 0 {
                             withAnimation {
                                 self.currentIndex = numberOfImages >= 0 ? numberOfImages - 1 : 0
-//                                print(self.currentIndex)
-//                                offset.width = CGFloat(self.currentIndex) * -geometry.size.width
                             }
                         }
                     } else {
-                        print(3)
+                        print("넘 죠큼이얏!")
                         self.slideGesture = .zero
-//                        offset.width = CGFloat(self.currentIndex) * -geometry.size.width
                     }
                 })
             
